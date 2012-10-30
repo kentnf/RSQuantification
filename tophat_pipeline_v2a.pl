@@ -8,7 +8,7 @@
 =head1 Version
 
  Author:  Yi Zheng
- Version: 1.4
+ Version: 2.0
 
 =head1 Update
  
@@ -51,7 +51,7 @@ my $usage = qq'
 tophat_pipeline_v2.pl
 
  Author:  Yi Zheng
- Version: 1.4
+ Version: 2.0
 
 USAGE: tophat_pipeline_v2.pl -i list -s SS -d database -l fr-firststrand [options]
 
@@ -141,12 +141,12 @@ if ($seg_length) {
 }
 # check input files
 my @index_files = (
-	$database_index.".1.ebwt",
-	$database_index.".2.ebwt",
-	$database_index.".3.ebwt",
-	$database_index.".4.ebwt",
-	$database_index.".rev.1.ebwt",
-	$database_index.".rev.2.ebwt"
+	$database_index.".1.bt2",
+	$database_index.".2.bt2",
+	$database_index.".3.bt2",
+	$database_index.".4.bt2",
+	$database_index.".rev.1.bt2",
+	$database_index.".rev.2.bt2"
 );
 
 foreach $index_file (@index_files) {
