@@ -126,42 +126,30 @@ foreach my $pre (sort keys %list_read)
 	my %mapped;
 	if ($sequencing_method eq "PS" || $sequencing_method eq "SS")	
 	{
-		my $plus_sam = $pre."_plus.sam";
-		my $minus_sam = $pre."_minus.sam";
-		system("samtools view -h -o $plus_sam $plus_bam") && die "Error at samtools view -h -o $plus_sam $plus_bam\n";
-		system("samtools view -h -o $minus_sam $minus_bam") && die "Error at samtools view -h -o $minus_sam $minus_bam\n";
 
-		my $pfh = IO::File->new($plus_sam) || die "Can not open plus SAM file $plus_sam $!\n";
+		my $pfh; 
+		open ($pfh, "samtools view $plus_bam | ") or die "Can not open plus BAM file $plus_bam with command \"samtools view $plus_bam\".\n$!\n"; 
 		while(my $line = <$pfh>)
 		{
 			my @a = split(/\t/, $line);
-			unless ($line =~ m/^@/)
-			{
-				$mapped{$a[0]} = 1;
-			}
+			$mapped{$a[0]} = 1;
 		}
 		$pfh->close;
 
-		my $mfh = IO::File->new($minus_sam) || die "Can not open minus file $minus_sam $!\n";
+		my $mfh; 
+		open ($mfh, "samtools view $minus_bam | ") or die "Can not open plus BAM file $minus_bam with \"samtools view $minus_bam\".\n$!\n"; 
 		while(my $line = <$mfh>)
 		{
 			my @a = split(/\t/, $line);
-                	unless ($line =~ m/^@/)
-                	{
-                        	$mapped{$a[0]} = 1;
-                	}
+                       	$mapped{$a[0]} = 1;
 		}
 		$mfh->close;
 	
-		unlink($plus_sam);
-		unlink($minus_sam);
         }
 	else
 	{
-		my $sam = $pre."_all.sam";
-		system("samtools view -h -o $sam $bam") && die "Error at samtools view -h -o $sam $bam\n";
-
-		my $sfh = IO::File->new($sam) || die "Can not open sam file $sam $!\n";
+		my $sfh; 
+		open($sfh, "samtools view $bam") or die "Can not open bam file with command \"samtools view $bam\"\n$!\n"; 
                 while(my $line = <$sfh>)
                 {
                         my @a = split(/\t/, $line);
@@ -171,8 +159,6 @@ foreach my $pre (sort keys %list_read)
                         }
                 }
                 $sfh->close;
-
-                unlink($sam);
 	}
 
         $uniq_mapped_read = scalar(keys(%mapped));

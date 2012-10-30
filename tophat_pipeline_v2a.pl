@@ -45,6 +45,7 @@ use PerlIO::gzip;
 use Bio::SeqIO;
 use Getopt::Long;
 
+BEGIN { $ENV{PATH}="${FindBin::RealBin}:$ENV{PATH}"; } 
 
 my $usage = qq'
 tophat_pipeline_v2.pl
@@ -127,7 +128,7 @@ if ($sequencing_method ne "SE" && $sequencing_method ne "SS" && $sequencing_meth
 }
 if ($cpu < 1) { $cpu = 1;  print STDERR "Change the number of used CPU to 1 (mininum)\n"; }
 if ($cpu > 20) {$cpu = 20; print STDERR "Change the number of used CPU to 20 (maxinum)\n"; }
-if ($seg_mismatch < $read_mismatch) { $seg_mismatch = $read_mismatch; print STDERR "Change segment mismatch to $read_mismatch base on read mismatch\n"; }
+# if ($seg_mismatch < $read_mismatch) { $seg_mismatch = $read_mismatch; print STDERR "Change segment mismatch to $read_mismatch base on read mismatch\n"; }
 if ($seg_mismatch < 0) { $seg_mismatch = 0;  print STDERR "Change segment mismatch to 0 (mininum)\n"; }
 if ($seg_mismatch > 5) { $seg_mismatch = 5;  print STDERR "Change segment mismatch to 5 (maxinum)\n"; }
 if ($read_mismatch < 0) { $read_mismatch = 0;  print STDERR "Change read mismatch to 0 (mininum)\n"; }
@@ -457,7 +458,7 @@ foreach my $list (sort keys %list)
 			}
 			$ofh3->close;
 
-			print "Plus strand in mismatch $i: $num_mismatch_plus\nMinus strand in mismatch $i: $num_mismatch_minus\n";
+			print "Plus strand in mismatch $i-th cycle: $num_mismatch_plus\nMinus strand in mismatch $i-th cycle: $num_mismatch_minus\n";
 
 			my $folder = $list."_m".$i;
 			#system("rm -rf $folder");
@@ -554,12 +555,14 @@ foreach my $list (sort keys %list)
 #################################################################
 if ($gene_position)
 {
-	my $cmd_exp_raw = "get_exp_raw.pl -i $list_file -s $sequencing_method -a $gene_position";
+	# my $cmd_exp_raw = "get_exp_raw.pl -i $list_file -s $sequencing_method -a $gene_position";
+	my $cmd_exp_raw = "${FindBin::RealBin}/get_exp_raw.pl -i $list_file -s $sequencing_method -a $gene_position";
 	print "\n\nGet expression raw count ... \n\n$cmd_exp_raw\n";
 	system($cmd_exp_raw) && die "Error at cmd $cmd_exp_raw";
 	print "\nexpression raw count is generated.\n";
 
-	my $cmd_uniq_mapped_num = "get_uniq_mapped_num.pl -i $list_file -s $sequencing_method";
+	# my $cmd_uniq_mapped_num = "get_uniq_mapped_num.pl -i $list_file -s $sequencing_method";
+	my $cmd_uniq_mapped_num = "${FindBin::RealBin}/get_uniq_mapped_num.pl -i $list_file -s $sequencing_method";
 	print "\n\nGet uniq mapped num ... \n\n$cmd_uniq_mapped_num\n";
 	system($cmd_uniq_mapped_num) && die "Error at cmd $cmd_uniq_mapped_num";
         print "\nuniq mapped num is generated.\n";
@@ -593,7 +596,8 @@ if ($gene_position)
 		$expadj->close;
 		$expraw->close;
 			
-		my $cmd_exp_rpkm = "get_exp_rpkm.pl -x $gene_length -e $exp_sense_adjust";
+		# my $cmd_exp_rpkm = "get_exp_rpkm.pl -x $gene_length -e $exp_sense_adjust";
+		my $cmd_exp_rpkm = "${FindBin::RealBin}/get_exp_rpkm.pl -x $gene_length -e $exp_sense_adjust";
 		print "\n\nGet expression of RPKM ... \n\n$cmd_exp_rpkm\n";
 		system($cmd_exp_rpkm) && die "Error at cmd $cmd_exp_rpkm";
 		print "\nexpression of RPKM is generated.\n";
