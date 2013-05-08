@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
+use warnings;
 use Statistics::Basic qw(:all nofill);
 
 my $usage = "Perl this input > output\n";
