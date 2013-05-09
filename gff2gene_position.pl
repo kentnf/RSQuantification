@@ -12,11 +12,7 @@ while(<$fh>)
 	unless($_ =~ m/^#/)
 	{
 		my @a = split(/\t/, $_);
-<<<<<<< HEAD
 		if ($a[2] eq 'gene')
-=======
-		if ($a[2] eq 'mRNA')
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 		{
 			my ($chr, $start, $end, $strand) = ($a[0], $a[3], $a[4], $a[6]);
 			my $gene_id = get_gene_id($a[8]);

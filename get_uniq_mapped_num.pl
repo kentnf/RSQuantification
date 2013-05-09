@@ -20,12 +20,9 @@
 
  2012-03-09
  1. identify read format automatically.
-<<<<<<< HEAD
 
  2013-02-23
  1. read file is not required, just bam is OK
-=======
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
  
 =head1 Description
 
@@ -77,10 +74,7 @@ if ($sequencing_method ne "SE" && $sequencing_method ne "SS" && $sequencing_meth
 my %list_read = check_list_file($list_file, $sequencing_method);
 
 my $out = IO::File->new(">".$output) || die "Can not open file $output $!\n";
-<<<<<<< HEAD
 print $out "#Sample\tclean\tmapped reads\t%mapped\n";
-=======
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 
 foreach my $pre (sort keys %list_read)
 {
@@ -106,7 +100,6 @@ foreach my $pre (sort keys %list_read)
 	
 	# count the total number of read
 	my ($fh, $id, $format, $total_read);
-<<<<<<< HEAD
 	if ($file eq "NA")
 	{
 		$total_read = "NA";
@@ -137,31 +130,6 @@ foreach my $pre (sort keys %list_read)
 		}
 		close($fh);
 	}
-=======
-	if ($file =~ m/\.gz/)
-	{
-		open($fh, "<:gzip", $file) || die "Can not open read file $file $!\n";
-	}
-	else
-	{
-		open($fh, $file) || die "Can not open read file $file $!\n";
-	}
-
-	while($id = <$fh>)
-	{
-		chomp($id);
-		unless ($format)
-		{
-			if ($id =~ m/^>/) { $format = "fa"; }
-			elsif ($id =~ m/^@/) { $format = "fq"; }
-			else { die "Error at read format $id\n"; }
-		}
-		<$fh>;
-		if ($format eq "fq") { <$fh>; <$fh>; }
-		$total_read++;
-	}
-	close($fh);
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 
 	# step2. count the number of mapped read
 	my ($uniq_mapped_read, $percentage);
@@ -169,7 +137,6 @@ foreach my $pre (sort keys %list_read)
 	my %mapped;
 	if ($sequencing_method eq "PS" || $sequencing_method eq "SS")	
 	{
-<<<<<<< HEAD
 		my $plus_sam = $pre."_plus.sam";
 		my $minus_sam = $pre."_minus.sam";
 		system("samtools view -h -o $plus_sam $plus_bam") && die "Error at samtools view -h -o $plus_sam $plus_bam\n";
@@ -206,32 +173,6 @@ foreach my $pre (sort keys %list_read)
 		system("samtools view -h -o $sam $bam") && die "Error at samtools view -h -o $sam $bam\n";
 
 		my $sfh = IO::File->new($sam) || die "Can not open sam file $sam $!\n";
-=======
-
-		my $pfh; 
-		open ($pfh, "samtools view $plus_bam | ") or die "Can not open plus BAM file $plus_bam with command \"samtools view $plus_bam\".\n$!\n"; 
-		while(my $line = <$pfh>)
-		{
-			my @a = split(/\t/, $line);
-			$mapped{$a[0]} = 1;
-		}
-		$pfh->close;
-
-		my $mfh; 
-		open ($mfh, "samtools view $minus_bam | ") or die "Can not open plus BAM file $minus_bam with \"samtools view $minus_bam\".\n$!\n"; 
-		while(my $line = <$mfh>)
-		{
-			my @a = split(/\t/, $line);
-                       	$mapped{$a[0]} = 1;
-		}
-		$mfh->close;
-	
-        }
-	else
-	{
-		my $sfh; 
-		open($sfh, "samtools view $bam") or die "Can not open bam file with command \"samtools view $bam\"\n$!\n"; 
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
                 while(my $line = <$sfh>)
                 {
                         my @a = split(/\t/, $line);
@@ -241,7 +182,6 @@ foreach my $pre (sort keys %list_read)
                         }
                 }
                 $sfh->close;
-<<<<<<< HEAD
 
                 unlink($sam);
 	}
@@ -251,13 +191,6 @@ foreach my $pre (sort keys %list_read)
 	if ($total_read eq "NA") { $percentage = "NA"; }
 	else { $percentage =  sprintf("%.2f", ($uniq_mapped_read/$total_read)*100); }
         print $out "$pre\t$total_read\t$uniq_mapped_read\t$percentage\n";
-=======
-	}
-
-        $uniq_mapped_read = scalar(keys(%mapped));
-	$percentage =  sprintf("%.2f%%", ($uniq_mapped_read/$total_read)*100);
-        print $out "$pre\t$uniq_mapped_read\t$total_read\t$percentage\n";
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 }
 $out->close;
 
@@ -299,10 +232,7 @@ sub check_list_file
                                         }
                                 }
                         }
-<<<<<<< HEAD
 			unless ($reads) { $reads = "NA\tNA"; }
-=======
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
                 }
                 else
                 {
@@ -319,10 +249,7 @@ sub check_list_file
                                         }
                                 }
                         }
-<<<<<<< HEAD
 			unless ($reads) { $reads = "NA"; }
-=======
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
                 }
 
 		# check bam file
@@ -346,11 +273,7 @@ sub check_list_file
                 }
                 else
                 {
-<<<<<<< HEAD
                         print STDERR "Error! Can not locate read and BAM for list: $list.\n";
-=======
-                        print STDERR "Error! Can not locate read or BAM for list: $list.\n";
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
                 }
         }
 	$ls->close;

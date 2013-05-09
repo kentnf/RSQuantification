@@ -75,10 +75,7 @@ my $list = IO::File->new($read_list) || die "Can not open read file $read_list\n
 while(<$list>)
 {
 	chomp;
-<<<<<<< HEAD
 	
-=======
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 	if ($sequencing eq "PS" || $sequencing eq "SS")
 	{
 		my $plus_bam = $_."_plus.bam";
@@ -180,11 +177,7 @@ while(<$fh>)
 				my ($antisense_num, $sense_num);
                         	if      ($strand eq "+") { $antisense_num = $plus_gene_count{$trans};  $sense_num = $minus_gene_count{$trans}; }
                         	elsif   ($strand eq "-") { $antisense_num = $minus_gene_count{$trans}; $sense_num = $plus_gene_count{$trans};  }
-<<<<<<< HEAD
                         	else    {die "Error at strand in : $trans\n";  }
-=======
-                        	else    {die "Error at strand\n";}
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 
                         	$sense_count{$trans}.= "\t".$sense_num;
 				$antisense_count{$trans}.= "\t".$antisense_num;

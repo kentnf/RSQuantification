@@ -1,10 +1,5 @@
 #!/usr/bin/perl
 
-<<<<<<< HEAD
-=======
-use strict;
-use warnings;
->>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 use Statistics::Basic qw(:all nofill);
 
 my $usage = "Perl this input > output\n";
