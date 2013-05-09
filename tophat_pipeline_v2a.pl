@@ -8,7 +8,11 @@
 =head1 Version
 
  Author:  Yi Zheng
+<<<<<<< HEAD
  Version: 1.5
+=======
+ Version: 2.0
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 
 =head1 Update
  
@@ -34,12 +38,15 @@
  3. run cufflinks in bin first, than find cufflinks in path
  4. fix bug for the ID of fq sequence
 
+<<<<<<< HEAD
  2013/02/19
  1. Add -g parameter for --max-multihits
 
  2013/02/23
  1. fix the bug for library size
 
+=======
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 =head1 Example
  
 =cut
@@ -51,12 +58,20 @@ use PerlIO::gzip;
 use Bio::SeqIO;
 use Getopt::Long;
 
+<<<<<<< HEAD
+=======
+BEGIN { $ENV{PATH}="${FindBin::RealBin}:$ENV{PATH}"; } 
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 
 my $usage = qq'
 tophat_pipeline_v2.pl
 
  Author:  Yi Zheng
+<<<<<<< HEAD
  Version: 1.6
+=======
+ Version: 2.0
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 
 USAGE: tophat_pipeline_v2.pl -i list -s SS -d database -l fr-firststrand [options]
 
@@ -74,7 +89,10 @@ USAGE: tophat_pipeline_v2.pl -i list -s SS -d database -l fr-firststrand [option
  -m  [Integer]  segment mismatches (default = 0)
  -n  [Integer]  initial read mismatches (default = 0)
  -b  [Integer]  setment length (default : half of read length; 17~25)
+<<<<<<< HEAD
  -g  [Integer]  max-multihits (default : 20)
+=======
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
  -c  [Integer]  cycle (default = 0, range: 0,1,2)
 
  -a     (str)  gene and position file (optional)
@@ -83,7 +101,11 @@ USAGE: tophat_pipeline_v2.pl -i list -s SS -d database -l fr-firststrand [option
 ';
 
 my $help;
+<<<<<<< HEAD
 my ($list_file, $sequencing_method, $database_index, $lib_type, $seg_mismatch, $max_multihits, $seg_length, $read_mismatch, 
+=======
+my ($list_file, $sequencing_method, $database_index, $lib_type, $seg_mismatch, $seg_length, $read_mismatch, 
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 $mate_inner_dist, $mate_std_dev, $cycle, $gene_position, $gene_length);
 
 GetOptions(
@@ -96,8 +118,11 @@ GetOptions(
 	"b|segment-length=i"		=> \$seg_length,
 	"n|read-mismatch=i"		=> \$read_mismatch,
 
+<<<<<<< HEAD
 	"g|max-multihits=i"		=> \$max_multihits,
 
+=======
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 	"d|database-index=s"		=> \$database_index,
 	"a|gene-position=s"		=> \$gene_position,
 	"x|gene-length=s"		=> \$gene_length,
@@ -127,8 +152,11 @@ $mate_inner_dist ||= "100";
 $mate_std_dev ||= "20";
 $cpu ||= "8";
 $cycle ||= "0";
+<<<<<<< HEAD
 $max_multihits ||= "20";
 
+=======
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 
 if ($library_type ne "fr-unstranded" && $library_type ne "fr-firststrand" && $library_type ne "fr-secondstrand") {
 	die "Error at library-type: $library_type\t".$usage."\n";
@@ -138,7 +166,11 @@ if ($sequencing_method ne "SE" && $sequencing_method ne "SS" && $sequencing_meth
 }
 if ($cpu < 1) { $cpu = 1;  print STDERR "Change the number of used CPU to 1 (mininum)\n"; }
 if ($cpu > 20) {$cpu = 20; print STDERR "Change the number of used CPU to 20 (maxinum)\n"; }
+<<<<<<< HEAD
 if ($seg_mismatch < $read_mismatch) { $seg_mismatch = $read_mismatch; print STDERR "Change segment mismatch to $read_mismatch base on read mismatch\n"; }
+=======
+# if ($seg_mismatch < $read_mismatch) { $seg_mismatch = $read_mismatch; print STDERR "Change segment mismatch to $read_mismatch base on read mismatch\n"; }
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 if ($seg_mismatch < 0) { $seg_mismatch = 0;  print STDERR "Change segment mismatch to 0 (mininum)\n"; }
 if ($seg_mismatch > 5) { $seg_mismatch = 5;  print STDERR "Change segment mismatch to 5 (maxinum)\n"; }
 if ($read_mismatch < 0) { $read_mismatch = 0;  print STDERR "Change read mismatch to 0 (mininum)\n"; }
@@ -151,6 +183,7 @@ if ($seg_length) {
 }
 # check input files
 my @index_files = (
+<<<<<<< HEAD
 	$database_index.".1.ebwt",
 	$database_index.".2.ebwt",
 	$database_index.".3.ebwt",
@@ -161,6 +194,18 @@ my @index_files = (
 
 foreach $index_file (@index_files) {
 	#unless(-s $index_file) { die "Error! $index_file not exist or have no info\n"; }
+=======
+	$database_index.".1.bt2",
+	$database_index.".2.bt2",
+	$database_index.".3.bt2",
+	$database_index.".4.bt2",
+	$database_index.".rev.1.bt2",
+	$database_index.".rev.2.bt2"
+);
+
+foreach $index_file (@index_files) {
+	unless(-s $index_file) { die "Error! $index_file not exist or have no info\n"; }
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 }
 
 # check parameters mate-inner-distance and mate-std-dev 
@@ -198,7 +243,11 @@ $mate_inner_dist = "-r $mate_inner_dist";
 $mate_std_dev = "--mate-std-dev $mate_std_dev";
 $seg_mismatch = "--segment-mismatches $seg_mismatch";
 $read_mismatch = "--read-mismatches $read_mismatch";
+<<<<<<< HEAD
 $max_multihits = "--max-multihits $max_multihits";
+=======
+
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 # add other parameters to basic for tophat (optional)			#
 my $other_parameters = "";
 # example 
@@ -208,11 +257,19 @@ my $basic_parameters;
 
 if ($sequencing_method eq "PE" || $sequencing_method eq "PS")
 {
+<<<<<<< HEAD
 	$basic_parameters = "--no-convert-bam $library_type $mate_inner_dist $mate_std_dev $cpu $seg_mismatch $max_multihits $read_mismatch $other_parameters";
 }
 else
 {
 	$basic_parameters = "--no-convert-bam $library_type $cpu $seg_mismatch $read_mismatch $max_multihits $other_parameters";
+=======
+	$basic_parameters = "--no-convert-bam $library_type $mate_inner_dist $mate_std_dev $cpu $seg_mismatch $read_mismatch $other_parameters";
+}
+else
+{
+	$basic_parameters = "--no-convert-bam $library_type $cpu $seg_mismatch $read_mismatch $other_parameters";
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 }
 
 print $basic_parameters."\n";
@@ -468,7 +525,11 @@ foreach my $list (sort keys %list)
 			}
 			$ofh3->close;
 
+<<<<<<< HEAD
 			print "Plus strand in mismatch $i: $num_mismatch_plus\nMinus strand in mismatch $i: $num_mismatch_minus\n";
+=======
+			print "Plus strand in mismatch $i-th cycle: $num_mismatch_plus\nMinus strand in mismatch $i-th cycle: $num_mismatch_minus\n";
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 
 			my $folder = $list."_m".$i;
 			#system("rm -rf $folder");
@@ -565,11 +626,17 @@ foreach my $list (sort keys %list)
 #################################################################
 if ($gene_position)
 {
+<<<<<<< HEAD
 	my $cmd_exp_raw = "get_exp_raw.pl -i $list_file -s $sequencing_method -a $gene_position";
+=======
+	# my $cmd_exp_raw = "get_exp_raw.pl -i $list_file -s $sequencing_method -a $gene_position";
+	my $cmd_exp_raw = "${FindBin::RealBin}/get_exp_raw.pl -i $list_file -s $sequencing_method -a $gene_position";
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 	print "\n\nGet expression raw count ... \n\n$cmd_exp_raw\n";
 	system($cmd_exp_raw) && die "Error at cmd $cmd_exp_raw";
 	print "\nexpression raw count is generated.\n";
 
+<<<<<<< HEAD
 	my $cmd_uniq_mapped_num = "get_uniq_mapped_num.pl -i $list_file -s $sequencing_method";
 	print "\n\nGet uniq mapped num ... \n\n$cmd_uniq_mapped_num\n";
 	system($cmd_uniq_mapped_num) && die "Error at cmd $cmd_uniq_mapped_num";
@@ -593,6 +660,49 @@ if ($gene_length)
 	print "\n\nGet expression of RPKM ... \n\n$cmd_exp_rpkm\n";
 	system($cmd_exp_rpkm) && die "Error at cmd $cmd_exp_rpkm";
 	print "\nexpression of RPKM is generated.\n";
+=======
+	# my $cmd_uniq_mapped_num = "get_uniq_mapped_num.pl -i $list_file -s $sequencing_method";
+	my $cmd_uniq_mapped_num = "${FindBin::RealBin}/get_uniq_mapped_num.pl -i $list_file -s $sequencing_method";
+	print "\n\nGet uniq mapped num ... \n\n$cmd_uniq_mapped_num\n";
+	system($cmd_uniq_mapped_num) && die "Error at cmd $cmd_uniq_mapped_num";
+        print "\nuniq mapped num is generated.\n";
+
+	#########################################################
+	# generate exp_rpkm info if provide gene length		#
+	#########################################################
+	if ($gene_length)
+	{
+		# generate expression_adjust file;
+		my ($libsize, $exp_sense_adjust) = ("", "exp_sense_adjust");
+		if (-s "uniq_mapped_num") 
+		{
+			$libsize = `cut -f2 uniq_mapped_num`;
+			chomp($libsize);
+			$libsize =~ s/\n/\t/ig;
+			$libsize = "libsize\t$libsize";
+		}
+		else
+		{
+			print STDERR "Can not get library size from file uniq_mapped_num\n";
+			exit;
+		}
+
+		my $expraw = IO::File->new("exp_sense_raw") || die "Can not open exp_sense_raw file $!\n";
+		my $expadj = IO::File->new(">".$exp_sense_adjust) || die "Can not open exp_sense_adjust file $!\n";
+		my $title = <$expraw>;
+		print $expadj $title;
+		print $expadj $libsize."\n";
+		while(<$expraw>) { print $expadj $_; }
+		$expadj->close;
+		$expraw->close;
+			
+		# my $cmd_exp_rpkm = "get_exp_rpkm.pl -x $gene_length -e $exp_sense_adjust";
+		my $cmd_exp_rpkm = "${FindBin::RealBin}/get_exp_rpkm.pl -x $gene_length -e $exp_sense_adjust";
+		print "\n\nGet expression of RPKM ... \n\n$cmd_exp_rpkm\n";
+		system($cmd_exp_rpkm) && die "Error at cmd $cmd_exp_rpkm";
+		print "\nexpression of RPKM is generated.\n";
+	}
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 }
 
 #################################################################
@@ -611,7 +721,10 @@ sub check_list_file
 	while($file = <$fh>)
 	{
 		chomp($file);
+<<<<<<< HEAD
 		$file =~ s/\s+//ig;
+=======
+>>>>>>> 1f8cef8346c6584816b471a27f17b383d50a3df6
 
 		# check if the read files are exist
 		# link the list and read files to hash 
