@@ -1,9 +1,22 @@
 #!/usr/bin/perl
 
+=head1 Name
+
+ gff2gene_position.pl -- conert gff annotation to gene position file.
+
+=cut
+
+use strict;
+use warnings;
 use IO::File;
 
-my $file = shift || die;
+my $usage = qq'
+usage: perl $0 input > output
 
+* input is gff file, the gff file must have gene label
+';
+
+my $file = shift || die $usage;
 
 my $fh = IO::File->new($file) || die "Can not open GTF file $file $!\n";
 while(<$fh>)
@@ -22,7 +35,12 @@ while(<$fh>)
 }
 $fh->close;
 
-# subroutine
+#################################################################
+# kentnf: subroutine						#
+#################################################################
+=head2 get_gene_id
+
+=cut
 sub get_gene_id
 {
 	my $annotation = shift;
@@ -39,4 +57,3 @@ sub get_gene_id
 	$gid =~ s/ID=//ig;
 	return $gid;
 }
-

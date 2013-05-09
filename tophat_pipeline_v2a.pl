@@ -8,7 +8,7 @@
 =head1 Version
 
  Author:  Yi Zheng
- Version: 1.5
+ Version: 2.0
 
 =head1 Update
  
@@ -43,21 +43,15 @@
 =head1 Example
  
 =cut
-#use strict;
-#use warnings;
+use strict;
+use warnings;
 use FindBin;
 use IO::File;
 use PerlIO::gzip;
 use Bio::SeqIO;
 use Getopt::Long;
 
-
 my $usage = qq'
-tophat_pipeline_v2.pl
-
- Author:  Yi Zheng
- Version: 1.6
-
 USAGE: tophat_pipeline_v2.pl -i list -s SS -d database -l fr-firststrand [options]
 
  -i  [String]   Name of the input list of read files (required)
@@ -83,8 +77,8 @@ USAGE: tophat_pipeline_v2.pl -i list -s SS -d database -l fr-firststrand [option
 ';
 
 my $help;
-my ($list_file, $sequencing_method, $database_index, $lib_type, $seg_mismatch, $max_multihits, $seg_length, $read_mismatch, 
-$mate_inner_dist, $mate_std_dev, $cycle, $gene_position, $gene_length);
+my ($list_file, $sequencing_method, $database_index, $library_type, $seg_mismatch, $max_multihits, $seg_length, $read_mismatch, 
+$mate_inner_dist, $mate_std_dev, $cpu, $cycle, $gene_position, $gene_length);
 
 GetOptions(
 	"h|?|help"			=> \$help,
@@ -109,13 +103,6 @@ GetOptions(
 	"c|cycle=i"			=> \$cycle
 );
 
-print STDERR "\nTophat pipeline begin at:\t".`date`."\n";
-print STDERR "Checking input parameters ......\n";
-
-# check parameters.
-# 1. check required parameters
-# 2. set default parameters
-# 3. check and correct the parameters
 die $usage if $help;
 die $usage unless $list_file;
 die $usage unless $database_index;
@@ -129,6 +116,12 @@ $cpu ||= "8";
 $cycle ||= "0";
 $max_multihits ||= "20";
 
+print STDERR "\nTophat pipeline begin at:\t".`date`."\n";
+print STDERR "Checking input parameters ......\n";
+# check parameters.
+# 1. check required parameters
+# 2. set default parameters
+# 3. check and correct the parameters
 
 if ($library_type ne "fr-unstranded" && $library_type ne "fr-firststrand" && $library_type ne "fr-secondstrand") {
 	die "Error at library-type: $library_type\t".$usage."\n";
@@ -151,16 +144,16 @@ if ($seg_length) {
 }
 # check input files
 my @index_files = (
-	$database_index.".1.ebwt",
-	$database_index.".2.ebwt",
-	$database_index.".3.ebwt",
-	$database_index.".4.ebwt",
-	$database_index.".rev.1.ebwt",
-	$database_index.".rev.2.ebwt"
+	$database_index.".1.bt2",
+	$database_index.".2.bt2",
+	$database_index.".3.bt2",
+	$database_index.".4.bt2",
+	$database_index.".rev.1.bt2",
+	$database_index.".rev.2.bt2"
 );
 
-foreach $index_file (@index_files) {
-	#unless(-s $index_file) { die "Error! $index_file not exist or have no info\n"; }
+foreach my $index_file (@index_files) {
+	unless(-s $index_file) { die "Error! $index_file not exist or have no info\n"; }
 }
 
 # check parameters mate-inner-distance and mate-std-dev 
@@ -840,9 +833,9 @@ sub paired_end_filter
 
 	my %select_read;
 	# filter the mismatch alignment base on mismatch record
-	my $ftmp = IO::File->new($temp) || die "can not open temp file: $temp\n";	
+	my $tmpf = IO::File->new($temp) || die "can not open temp file: $temp\n";	
 	my $fout = IO::File->new(">".$outsam) || die "Can not open output file: $outsam\n";
-	while(<$ftmp>)
+	while(<$tmpf>)
 	{
 		chomp;
 		my @a = split(/\t/, $_);
@@ -861,7 +854,7 @@ sub paired_end_filter
 			print $fout $_."\n";
 		}
 	}
-	$ftmp->close;
+	$tmpf->close;
 	$fout->close;
 
 	return %select_read;

@@ -1,9 +1,9 @@
 1. Install
 
 Perl modular: PerlIO::gzip, ....
-Tophat
-Bowtie
-Samtools
+Tophat2
+Bowtie2
+samtools
 
 2. Usage
 
@@ -24,5 +24,7 @@ $ get_uniq_mapped_read.pl -i list -s SS
 get the raw count of gene expression
 $ get_exp_raw.pl -i list -s SS -a /path/plant_gene_position
 
-normalization
+ Normalization
 $ get_exp_rpkm -e -x exp_sense_adjust /path/plant_gene_length
+
+Correlation

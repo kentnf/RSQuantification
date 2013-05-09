@@ -1,15 +1,20 @@
 #!/usr/bin/perl
 
+use strict;
+use warnings;
 use IO::File;
 
 my $usage = qq'
-perl parse_rRNA_rm_rpt.pl  rRNA_rm.report
+perl parse_rRNA_rm_rpt.pl  rRNA_rm.report > output
 
 ';
 
 my $file = shift || die $usage;
 
 print "#sample\ttotal\trRNA\tclean\n";
+
+my ($start, $sample, $total, $align, $failed);
+my (@a, @b, @c, @d);
 
 my $fh = IO::File->new($file) || die "Can not open rRNA_rm report file $file $!\n";
 while(<$fh>)
