@@ -210,7 +210,6 @@ else
 
 print $basic_parameters."\n";
 
-
 # check tophat bin
 my $tophat_bin;
 if (-s "${FindBin::RealBin}/bin/tophat-2.0.4.Linux_x86_64/tophat2" )
@@ -223,6 +222,10 @@ else
 }
 
 print "\ntopaht bin locate at:\n".$tophat_bin."\n";
+
+# check samtools and bowtie bin
+#$ENV{'PATH'} = $program_dir."/bin".":".$ENV{'PATH'};
+
 
 #================================================================
 # main								
