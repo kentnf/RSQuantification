@@ -56,24 +56,24 @@ Get correlation for each samples
 Prepare comparison file for pairwise comparison
     
     Samples: C_rep1, C_rep2, C_rep3, T_rep1, T_rep2, T_rep3
-    File: C\tT\n
+    Comparison_list File: C\tT\n
     
 Pairwise statistics analysis using DESeq
 
-    $
+    $DESeq_pipeline.pl  raw_count  rpkm_file  comparison_list  output
 
 Pairwise statistics analysis using edgeR
 
-    $
+    $edgeR_pipeline.pl  raw_count  rpkm_file  comparison_list  output
 
 Prepare comparison file for time-series comparison
 
     Samples: T1h_rep1, T1h_rep2, T6h_rep1, T6h_rep2, T12h_rep1, T12h_rep2
-    File: T1h\tT6h\tT12h\n
+    Comparison_list File: T1h\tT6h\tT12h\n
 
 Time-series statistics analysis using DESeq and LIMMA
 
-    $
+    $TSlimma_pipeline.pl  raw_count  rpkm_file  comparison_list  output
 
 =================
 3. Other Tools
