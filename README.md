@@ -2,7 +2,7 @@
 1. Install
 =================
 
-Perl modular: PerlIO::gzip, ....
+Perl modular: PerlIO::gzip, ....\n
 Tophat2
 Bowtie2
 samtools
@@ -32,18 +32,23 @@ Perform the fellowing analysis:
 
 Perform the below analysis step by step:
 1) align the cleaned reads to genome
+
     $tophat_pipeline_v2.pl -i list -d /path/plant_genome -s SS -l firststrand -p 8 -m 1 -n 1
 
 2) get No. of uniq mapped reads (make sure the cleaned reads locate at the same folder of bam files)
+
     $get_uniq_mapped_read.pl -i list -s SS
 
 3) count the raw number for each gene
+
     $get_exp_raw.pl -i list -s SS -a gene_position_file
 
 4) normalization using RPKM
+
     $get_exp_rpkm.pl -e exp_sense_raw -u uniq_mapped_read_num -x tomato_gene_length
 
 Get correlation for each samples
+
     $corre.pl exp_rpkm > correlation.txt
 
 2.2 Perform statistics analysis for differentially expressed genes
@@ -54,9 +59,11 @@ Prepare comparison file for pairwise comparison
     File: C\tT\n
     
 Pairwise statistics analysis using DESeq
+
     $
 
 Pairwise statistics analysis using edgeR
+
     $
 
 Prepare comparison file for time-series comparison
@@ -65,6 +72,7 @@ Prepare comparison file for time-series comparison
     File: T1h\tT6h\tT12h\n
 
 Time-series statistics analysis using DESeq and LIMMA
+
     $
 
 =================
@@ -75,12 +83,15 @@ Time-series statistics analysis using DESeq and LIMMA
     In fact, using the representative transcriptome is better, 
 
 3.2 Get unmapped reads
+
     $get_unmapped_read.pl -i list -s SS
 
 3.3 Check the mapping rate to different Plant Genomes using bowtie
+
     $check_UBowtie.pl -i list -s SS -p CPU -d genome_bowtie_index -n genome_name
 
 3.4 Parse report file for rRNA removing
+
     $parse_rRNA_rm_rpt.pl rRNA_rm.report > output
 
 
