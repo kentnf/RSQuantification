@@ -10,7 +10,7 @@ Function:
 Parse the fasta or fastq file, then output the uniq fasta file with count
 
 Example: 10930 is the number of seq in input file
->id000001  10930
+>id000001-10930
 ATGAAAAAAAAAAACCCCCCCCCCCCCCCCCC
 
 ';
@@ -95,7 +95,7 @@ foreach my $num (sort { $b<=>$a } keys %sort_read_by_num)
 		$seq_num++;
 		my $seq_id = add_zero($seq_num, $length);
 		$seq_id = $read_id_prefix.$seq_id;
-		print OUT ">$seq_id\t$num\n$seq\n";
+		print OUT ">$seq_id-$num\n$seq\n";
 	}
 }
 
@@ -104,7 +104,7 @@ foreach my $seq (sort keys %read)
 	$seq_num++;
 	my $seq_id = add_zero($seq_num, $length);
 	$seq_id = $read_id_prefix.$seq_id;
-	print OUT ">$seq_id\t1\n$seq\n";
+	print OUT ">$seq_id-1\n$seq\n";
 }
 
 close(OUT);
