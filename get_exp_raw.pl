@@ -10,6 +10,11 @@
  Version: 1.0
 
 =head1 Update
+ 
+ 2013-05-19
+ 1. output the mapping reads to with fasta format like:
+ >read_id-geneid  Info
+ sequence
 
  2012-08-15
  1. Fix a bug for count SE reads
@@ -30,6 +35,7 @@
 	SE (single-end); 
 	PS (paired strand-specific); 
 	SS (single strand-specific);
+ -d				output the mapping reads with corresponding gene
  -h|?|help                help info
 
  =========================================
@@ -48,13 +54,14 @@ use IO::File;
 use Getopt::Long;
 
 my $help;
-my ($read_list, $sequencing_method, $gene_pos, $output);
+my ($read_list, $sequencing_method, $gene_pos, $detail_mapping, $output);
 
 GetOptions(
 	"h|?|help"		=> \$help,
 	"i|list=s"		=> \$read_list,
 	"s|sequencing-method=s"	=> \$sequencing_method,
 	"a|gene-position=s"	=> \$gene_pos,
+	"d|detail-mapping"	=> \$detail_mapping,
 	"o|output=s"		=> \$output
 );
 
@@ -63,6 +70,7 @@ die `pod2text $0` unless $read_list;
 
 $output ||= "exp";
 $sequencing_method ||= "SS";
+$detail_mapping ||= 0;
 
 # check sequencing method
 if ($sequencing_method ne "SE" && $sequencing_method ne "SS" && $sequencing_method ne "PE" && $sequencing_method ne "PS" ) {
@@ -155,13 +163,13 @@ while(<$fh>)
 
 		if ($sequencing eq "SS")
 		{
-			%plus_gene_count  = count_mapped_gene_single($plus_sam);
-			%minus_gene_count = count_mapped_gene_single($minus_sam);
+			%plus_gene_count  = count_mapped_gene_single($plus_sam,  $detail_mapping);
+			%minus_gene_count = count_mapped_gene_single($minus_sam, $detail_mapping);
 		}
 		else
 		{
-			%plus_gene_count  = count_mapped_gene_paired($plus_sam);
-			%minus_gene_count = count_mapped_gene_paired($minus_sam);
+			%plus_gene_count  = count_mapped_gene_paired($plus_sam,  $detail_mapping);
+			%minus_gene_count = count_mapped_gene_paired($minus_sam, $detail_mapping);
 		}
 
 		# convert plus and minus to sense and antisense; and store info to hash
@@ -201,11 +209,11 @@ while(<$fh>)
 		# count read num for each gene
 		if ($sequencing eq "SE")
 		{
-			%g_count = count_mapped_gene_single($sam);
+			%g_count = count_mapped_gene_single($sam, $detail_mapping);
 		}
 		else
 		{
-			%g_count = count_mapped_gene_paired($sam);
+			%g_count = count_mapped_gene_paired($sam, $detail_mapping);
 		}
 
 		# store info to hash
@@ -300,10 +308,14 @@ else
 =cut
 sub count_mapped_gene_single
 {
-	my $sam_file = shift;
+	my ($sam_file, $detail_mapping) = @_;
+	
+	my $read_mapped_fasta = $sam_file;
+	$read_mapped_fasta =~ s/\.sam/_mapped\.fa/;
 
 	# stroe the sam info to hash
 	my %single_read = ();
+	my %read_seq = ();
 
         my $fhs = IO::File->new($sam_file) || die "Can not open sam file $sam_file\n";
         while(<$fhs>)
@@ -318,19 +330,20 @@ sub count_mapped_gene_single
                         my $read_end = $a[3] + $length - 1;
                         my $key_info = $a[0]."\t".$a[2]."\t".$a[3]."\t".$read_end;
 
-                        if (defined $single_read{$key_info} )
-                        {
-                                $single_read{$key_info}++;
-                        }
-                        else
-                        {
-                                $single_read{$key_info} = 1;
-                        }
+			if ($detail_mapping) { $read_seq{$a[0]} = $a[9]; }
+
+                        if (defined $single_read{$key_info} ) { $single_read{$key_info}++; }
+                        else { $single_read{$key_info} = 1; }
                 }
         }
         $fhs->close;
 
 	# count the number of mapped read for gene using single read hash
+	# output the mapped reads info to fasta sequence file
+	my $out;
+	if ($detail_mapping) {
+		$out = IO::File->new(">".$read_mapped_fasta) || die "Can not open read mapped fasta file: $read_mapped_fasta $!\n";
+	}
 	my %gene_count;
 
 	foreach my $read (sort keys %single_read)
@@ -342,56 +355,60 @@ sub count_mapped_gene_single
                 my $num = $single_read{$read}; 
 
 		# two read has same key info: read id, ref id, start and stop are same. may impossible
+		my @genes;
                 if (defined $pos_hash{$start} && defined $pos_hash{$end} )
                 {
-                        if ( $pos_hash{$start} eq $pos_hash{$end} )
-                        {
-				my @genes = split(/\t/, $pos_hash{$start});
-				foreach my $gene (sort @genes)
-				{
-					if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
-					else { $gene_count{$gene}=1; }
-				}
-                        }
+                        if ( $pos_hash{$start} eq $pos_hash{$end} ) 
+			{ 
+				@genes = split(/\t/, $pos_hash{$start}); 
+			}
                         else
                         {
-				my @genes = split(/\t/, $pos_hash{$start});
-				foreach my $gene (sort @genes)
-				{
-					if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
-					else { $gene_count{$gene}=1; }
-				}
-				@genes = split(/\t/, $pos_hash{$end});
-				foreach my $gene (sort @genes)
-				{
-					if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
-					else { $gene_count{$gene}=1; }
-				}
+				my @genes1 = split(/\t/, $pos_hash{$start});
+				my @genes2 = split(/\t/, $pos_hash{$end});
+				my %gene;
+				foreach my $g1 (@genes1) { $gene{$g1} = 1; }
+				foreach my $g2 (@genes2) { $gene{$g2} = 1; }
+				@genes = keys(%gene);
                         }
                 }
                 elsif ( defined $pos_hash{$start} )
                 {
-			my @genes = split(/\t/, $pos_hash{$start});
-			foreach my $gene (sort @genes)
-			{
-				if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
-				else { $gene_count{$gene}=1; }
-			}
+			@genes = split(/\t/, $pos_hash{$start});
                 }
                 elsif ( defined $pos_hash{$end})
                 {
-			my @genes = split(/\t/, $pos_hash{$end});
-			foreach my $gene (sort @genes)
-			{
-				if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
-				else { $gene_count{$gene}=1; }
-			}
+			@genes = split(/\t/, $pos_hash{$end});
                 }
                 else
                 {
-
+			@genes = ();
                 }
+
+		# count the read number for each gene
+		foreach my $gene (sort @genes) 
+		{
+			if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
+			else { $gene_count{$gene}=1; }
+		}
+
+		# output the mapped reads with corresponding genes
+		if ($detail_mapping)
+		{
+			if (scalar(@genes) > 0)
+			{
+				my $gene = join("#", @genes);
+				print $out ">".$a[0]."-$gene\t$a[1]:$a[2]-$a[3]\n".$read_seq{$a[0]}."\n";
+			}
+		}
+		else
+		{
+			print $out ">".$a[0]."-Intergenic\t$a[1]:$a[2]-$a[3]\n".$read_seq{$a[0]}."\n";
+		}
         }
+
+	if ($detail_mapping) { $out->close; }
+
 	return %gene_count;
 }
 
@@ -400,10 +417,16 @@ sub count_mapped_gene_single
 =cut
 sub count_mapped_gene_paired
 {
-	my $sam_file = shift;
+	my ($sam_file, $detail_mapping) = @_;
+
+	my $read_mapped_fasta1 = $sam_file;
+	my $read_mapped_fasta2 = $sam_file;
+	$read_mapped_fasta1 =~ s/\.sam/_mapped_1\.fa/;
+	$read_mapped_fasta2 =~ s/\.sam/_mapped_2\.fa/;	
 
 	# stroe the sam info to hash
         my %pair_read = ();
+	my %read_seq = ();
 
 	my $fhs = IO::File->new($sam_file) || die "Can not open sam file $sam_file\n";
 	while(<$fhs>)
@@ -415,33 +438,28 @@ sub count_mapped_gene_paired
 		unless ($_ =~ m/^@/)
 		{
 			my $key_info;
+			if ($a[6] eq '=') { $a[6] = $a[2]; }
+			if ($a[3] < $a[7])	{ $key_info = $a[0]."\t".$a[2]."\t".$a[3]."\t".$a[6]."\t".$a[7]; }
+			elsif ($a[3] > $a[7])	{ $key_info = $a[0]."\t".$a[6]."\t".$a[7]."\t".$a[2]."\t".$a[3]; }
+			else			{ $key_info = $a[0]."\t".$a[6]."\t".$a[7]."\t".$a[2]."\t".$a[3]; }
+			$pair_read{$key_info} = 1;
 
-			if ($a[3] < $a[7])
-			{
-				$key_info = $a[0]."\t".$a[2]."\t".$a[3]."\t".$a[7];
-			}
-			elsif ($a[3] > $a[7])
-			{
-				$key_info = $a[0]."\t".$a[2]."\t".$a[7]."\t".$a[3];
-			}
-			else
-			{
-				$key_info = $a[0]."\t".$a[2]."\t".$a[7]."\t".$a[3];
-			}
-
-			if (defined $pair_read{$key_info} )
-			{
-				$pair_read{$key_info}++;
-			}
-			else
-			{
-				$pair_read{$key_info} = 1;
+			if ($detail_mapping) {
+				my $seq_key = $a[0]."\t".$a[2]."\t".$a[3];
+				$read_seq{$seq_key} = $a[9];
 			}
 		}
 	}
 	$fhs->close;
 
 	# get the number of read mapped to each genes
+	# output the mapped reads info to fasta sequence file
+	my ($out1, $out2);
+	if ($detail_mapping) 
+	{
+		$out1 = IO::File->new(">".$read_mapped_fasta1) || die "Can not open read mapped fasta file: $read_mapped_fasta1 $!\n";
+		$out2 = IO::File->new(">".$read_mapped_fasta2) || die "Can not open read mapped fasta file: $read_mapped_fasta2 $!\n";
+	}
 	my %gene_count = ();
 
 	foreach my $read (sort keys %pair_read)
@@ -449,59 +467,67 @@ sub count_mapped_gene_paired
 		my @a = split(/\t/, $read);
 		
 		my $start = $a[1]."#".$a[2];
-		my $end = $a[1]."#".$a[3];
-		my $num = $pair_read{$read}/2;
+		my $end = $a[3]."#".$a[4];
 
+		my ($key1, $key2);
+		$key1 = $a[0]."\t".$a[1]."\t".$a[2];
+		$key2 = $a[0]."\t".$a[3]."\t".$a[4];
+
+		my @genes;
 		if (defined $pos_hash{$start} && defined $pos_hash{$end} )
 		{
 			if ( $pos_hash{$start} eq $pos_hash{$end} )
 			{
-				my @genes = split(/\t/, $pos_hash{$start});
-				foreach my $gene (sort @genes)
-				{
-					if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
-					else { $gene_count{$gene}=1; }
-				}
+				@genes = split(/\t/, $pos_hash{$start});
 			}
 			else
 			{
-				my @genes = split(/\t/, $pos_hash{$start});
-				foreach my $gene (sort @genes)
-				{
-					if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
-					else { $gene_count{$gene}=1; }
-				}
-				@genes = split(/\t/, $pos_hash{$end});
-				foreach my $gene (sort @genes)
-				{
-					if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
-					else { $gene_count{$gene}=1; }
-                                }
+				my @genes1 = split(/\t/, $pos_hash{$start});
+				my @genes2 = split(/\t/, $pos_hash{$end});
+				my %gene;
+				foreach my $g1 (@genes1) { $gene{$g1} = 1; }
+				foreach my $g2 (@genes2) { $gene{$g2} = 1; }
+				@genes = keys(%gene);
 			}
 		}
 		elsif ( defined $pos_hash{$start} )
 		{
-			my @genes = split(/\t/, $pos_hash{$start});
-			foreach my $gene (sort @genes)
-			{
-				if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
-				else { $gene_count{$gene}=1; }
-			}
+			@genes = split(/\t/, $pos_hash{$start});
 		}
 		elsif ( defined $pos_hash{$end})
 		{
-			my @genes = split(/\t/, $pos_hash{$end});
-			foreach my $gene (sort @genes)
-			{
-				if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
-				else { $gene_count{$gene}=1; }
-			}
+			@genes = split(/\t/, $pos_hash{$end});
 		}
 		else
 		{
-
+			@genes = ();
+		}
+		
+		# count the number of reads for each gene
+		foreach my $gene (sort @genes)
+		{
+			if (defined $gene_count{$gene}) { $gene_count{$gene}++; }
+			else { $gene_count{$gene}=1; }
+		}
+		
+		# output the mapped reads with corresponding genes
+		if ($detail_mapping)
+		{	
+			if (scalar(@genes) > 0)
+			{
+				my $gene = join("#", @genes);
+				print $out1 ">".$a[0]."-$gene\t$a[1]:$a[2]-$a[3]:$a[4]\n".$read_seq{$key1}."\n";
+				print $out2 ">".$a[0]."-$gene\t$a[1]:$a[2]-$a[3]:$a[4]\n".$read_seq{$key2}."\n";
+			}
+			else
+			{
+				print $out1 ">".$a[0]."-Intergenic\t$a[1]:$a[2]-$a[3]:$a[4]\n".$read_seq{$key1}."\n";
+				print $out2 ">".$a[0]."-Intergenic\t$a[1]:$a[2]-$a[3]:$a[4]\n".$read_seq{$key2}."\n";
+			}
 		}
 	}
+
+	if ($detail_mapping) { $out1->close; $out2->close; }
 	return %gene_count;
 }
 

@@ -27,13 +27,13 @@ Perform the fellowing analysis:
 3) count the raw number for each gene
 4) normalization using RPKM
     
-    $tophat_pipeline_v2.pl -i list -d /path/plant_genome -s SS -l firststrand -p 8 -m 1 -n 1 / 
+    $tophat_pipeline_v2.pl -i list -d /path/plant_genome -s SS -l fr-firststrand -p 8 -m 1 -n 1 / 
                            -x gene_position_file -a gene_length
 
 Perform the below analysis step by step:
 1) align the cleaned reads to genome
 
-    $tophat_pipeline_v2.pl -i list -d /path/plant_genome -s SS -l firststrand -p 8 -m 1 -n 1
+    $tophat_pipeline_v2.pl -i list -d /path/plant_genome -s SS -l fr-firststrand -p 8 -m 1 -n 1
 
 2) get No. of uniq mapped reads (make sure the cleaned reads locate at the same folder of bam files)
 
@@ -94,4 +94,23 @@ Time-series statistics analysis using DESeq and LIMMA
 
     $parse_rRNA_rm_rpt.pl rRNA_rm.report > output
 
+=================
+4. Analysing Grafting RNASeq Datasets
+=================
+
+4.1 Aligning reads to scion sequence
+
+    $tophat_pipeline_v2.pl -i list -d /path/scion_sequnece -s PE -l fr-unstranded -p 8 -m 1 -n 1    
+
+4.2 Get unmapped reads
+ 
+    $get_unmapped_read.pl -i list -s PE
+
+4.3 Aligning unmapped reads to grated sequence
+
+    $tophat_pipeline_v2.pl -i list_unmap -d /path/grated_sequnece -s PE -l fr-unstranded -p 8 -m 0 -n 0
+
+4.4 Count the raw number for each gene & Get mapped reads and corresponding genes with fasta format
+
+    $get_exp_raw.pl -i list_unmap -s PE -a grated_gene_position -r 
 
