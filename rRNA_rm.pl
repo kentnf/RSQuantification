@@ -57,12 +57,12 @@ my %list_read = check_list_file($read_list, $sequencing_method);
 
 # chec rRNA index file
 my @index_files = (
-        $rRNA_index.".1.bt2",
-        $rRNA_index.".2.bt2",
-        $rRNA_index.".3.bt2",
-        $rRNA_index.".4.bt2",
-        $rRNA_index.".rev.1.bt2",
-        $rRNA_index.".rev.2.bt2"
+        $rRNA_index.".1.ebwt",
+        $rRNA_index.".2.ebwt",
+        $rRNA_index.".3.ebwt",
+        $rRNA_index.".4.ebwt",
+        $rRNA_index.".rev.1.ebwt",
+        $rRNA_index.".rev.2.ebwt"
 );
 
 foreach my $index_file (@index_files) {
@@ -96,8 +96,7 @@ while(<$fh>)
 	print $cmd."\n";
 	system($cmd) && die "Error at $cmd\n";
 }
-close(FH);
-
+$fh->close;
 unlink("MMMM");
 
 #################################################################
