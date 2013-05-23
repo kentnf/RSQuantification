@@ -583,8 +583,11 @@ if ($gene_length)
 		exit;
 	}
 
-	my $exp_sense = "exp_sense_raw"; 	
-	my $cmd_exp_rpkm = "get_exp_rpkm.pl -x $gene_length -u uniq_mapped_num -e $exp_sense";
+	my $raw_count;
+	if ($sequencing_method eq "SS" || $sequencing_method eq "PS") { $raw_count = "exp_sense_raw"; }
+	else { $raw_count = "exp_all"; }
+
+	my $cmd_exp_rpkm = "get_exp_rpkm.pl -x $gene_length -u uniq_mapped_num -e $raw_count";
 	print "\n\nGet expression of RPKM ... \n\n$cmd_exp_rpkm\n";
 	system($cmd_exp_rpkm) && die "Error at cmd $cmd_exp_rpkm";
 	print "\nexpression of RPKM is generated.\n";
