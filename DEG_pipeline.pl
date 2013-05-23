@@ -1,20 +1,57 @@
 #!/usr/bin/perl
 
+=head
+
+05/23/2013
+combine DESeq and edgeR to one program
+
+06/12/2012
+generate pdf for each comparison, including PCA plot, MA plot, and BCV plot.
+
+06/11/2012
+identify DE genes using edgeR
+
+=cut
+
 use strict;
 use warnings;
 use IO::File;
-
-# input is the raw count, rpkm file, pairwise comparison list, and the sample name must be sample_replicateN;
+use Getopt::Long;
 
 my $usage = qq'
-Perl DESeq_pipeline.pl  raw_count  rpkm_file  comparison_list  output
+Perl DEGs_pipeline.pl [options]
+
+	-i raw_count 
+	-r rpkm_file 
+	-c comparison_list 
+	-p program (default = DESeq)
+	-o output (default = program)
+
+* the sample name for raw count and rpkm file should be like sample_repN
+* the program should be DESeq or edgeR
 
 ';
 
-my $raw_count = shift || die $usage;
-my $rpkm_file = shift || die $usage;
-my $comp_list = shift || die $usage;
-my $output = shift || 'DE_out';
+my ($help, $raw_count, $rpkm_file, $comp_list, $program, $output);
+
+GetOptions(
+	"h"	=> \$help,
+	"i=s"	=> \$raw_count,
+	"r=s"	=> \$rpkm_file,
+	"c=s"	=> \$comp_list,
+	"p=s"	=> \$program,
+	"o=s"	=> \$output
+);
+
+die $usage if $help;
+die $usage unless $raw_count;
+die $usage unless $rpkm_file;
+die $usage unless $comp_list;
+$program ||= 'DESeq';
+$output ||= $program;
+
+if ($program eq 'DESeq' || $program eq 'edgeR') {} else { die "Error in program\n"; }
+
 #================================================================
 # store comparison list to hash	
 # key: compN; value: sample1 vs sample2				
@@ -119,7 +156,21 @@ foreach my $comp (@comparison)
 	}
 	$rfh->close;
 
-	my $r = generate_r($raw_file, $out_file, $sampleA, $sampleB, scalar(@v1), scalar(@v2));
+	my $r; my $gene_column; my $pvalue_column; 
+
+	if ($program eq 'DESeq')
+	{
+		$r = generate_r_deseq($raw_file, $out_file, $sampleA, $sampleB, scalar(@v1), scalar(@v2));
+		$pvalue_column = 8;
+		$gene_column = 1;
+	}
+	elsif ($program eq 'edgeR')
+	{
+		$r = generate_r_edger($raw_file, $out_file, $sampleA, $sampleB, scalar(@v1), scalar(@v2));
+		$pvalue_column = 4;
+		$gene_column = 0;
+	}
+
 	my $tmp = IO::File->new(">temp.R") || die "Can not open temp.R file $!\n";
 	print $tmp $r;
 	$tmp->close;
@@ -133,7 +184,7 @@ foreach my $comp (@comparison)
 		chomp;
 		$_ =~ s/"//ig;
 		my @a = split(/\t/, $_);
-		$padj{$a[1]}{$comp} = $a[8];
+		$padj{$a[$gene_column]}{$comp} = $a[$pvalue_column];
 	}
 	$ofh->close;
 }
@@ -350,7 +401,7 @@ foreach my $comp (sort keys %report)
 #================================================================
 # kentnf: subroutine
 #================================================================
-sub generate_r
+sub generate_r_deseq
 {
 	my ($input, $output, $sampleA, $sampleB, $numA, $numB ) = @_;
 	my $pwd = `pwd`;
@@ -408,3 +459,60 @@ hist(comp\$pval, breaks=100, col="skyblue", border="slateblue", main="")
 ';
 	return $r_code;	
 }
+
+sub generate_r_edger
+{
+	my ($input, $output, $sampleA, $sampleB, $numA, $numB ) = @_;
+	my $num_end = 2+$numA+$numB-1;
+	my $pwd = `pwd`;
+	chomp($pwd);
+
+	my $pca_pdf = $sampleA."_".$sampleB."_PCA.pdf";
+	my $bcv_pdf = $sampleA."_".$sampleB."_BCV.pdf";
+	my $ma_pdf = $sampleA."_".$sampleB."_MA.pdf";
+
+	my ($factorA, $factorB);
+	for(my $i=0; $i<$numA; $i++) { $factorA.=" \"$sampleA\","; }
+	for(my $i=0; $i<$numB; $i++) { $factorB.=" \"$sampleB\","; }	
+
+	$factorB =~ s/,$//;
+
+	my $r_code = qq'
+setwd(\'$pwd\')
+library(edgeR)
+library(limma)
+raw.data <- read.delim("$input")
+#names(raw.data)
+
+# normalization and filtering
+d <- raw.data[, 2:$num_end]
+rownames(d) <- raw.data[, 1]
+group <- c(rep("$sampleA", $numA), rep("$sampleB", $numB))
+d <- DGEList(counts = d, group = group)
+dim(d)
+cpm.d <- cpm(d)
+d <- d[ rowSums(cpm.d > 1) >=3, ]
+d <- calcNormFactors(d)
+
+# Data exploration, generate PCA pdf
+pdf("$pca_pdf",width=8,height=6)
+plotMDS(d, xlim=c(-1,1), labels = c( $factorA $factorB ))
+
+# Estimating the dispersion
+d <- estimateCommonDisp(d, verbose=TRUE)
+d <- estimateTagwiseDisp(d)
+pdf("$bcv_pdf",width=8,height=6)
+plotBCV(d)
+et <- exactTest(d)
+result <- topTags(et, n=40000, adjust.method="BH", sort.by="p.value")
+write.table( result, sep="\\t", file="$output" )
+
+# generate MA (Smear) plot
+detags <- rownames(topTags(et, n = 40000)\$table)
+pdf("$ma_pdf",width=8,height=6)
+plotSmear(et, de.tags=detags)
+abline(h = c(-2, 2), col = "dodgerblue")
+';
+	return $r_code;
+}
+
