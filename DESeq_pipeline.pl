@@ -37,7 +37,7 @@ sub comparison_to_array
 # parse raw count dataset					
 # save comparison data files without zero
 #================================================================
-my ($raw, $title) = raw_count_to_hash($raw_count);
+my ($title, $raw) = raw_count_to_hash($raw_count);
 
 sub raw_count_to_hash
 {
@@ -94,7 +94,7 @@ my %padj; my %replicate; my %comp_sample;
 
 foreach my $comp (@comparison)
 {
-	my ($sampleA, $sampleB) = split(/\t/, $comp);
+	my ($sampleA, $sampleB) = split(/\t/, $comp); 
 	$comp_sample{$sampleA} = 1;
         $comp_sample{$sampleB} = 1;
 	my $raw_file = $comp; my $out_file = $comp;
@@ -192,7 +192,7 @@ sub rpkm_to_hash
 	}
 	$fh->close;
 
-	return(\%RPKM, \%total);
+	return(\%total, \%RPKM);
 }
 
 my %mean;
@@ -204,7 +204,7 @@ foreach my $gene (sort keys %$total)
 		{
 			my $total = $$total{$gene}{$sample};
 			my $rep = $replicate{$sample};
-
+			
 			if ($rep == 0) {
 				die "Error at replicate num of $sample\n";
 			}
