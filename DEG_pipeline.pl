@@ -28,7 +28,7 @@ Perl DEGs_pipeline.pl [options]
 	-o output (default = program)
 
 * the sample name for raw count and rpkm file should be like sample_repN
-* the program should be DESeq or edgeR
+* the program should be DESeq / edgeR / NOISeq / LIMMA / VST
 
 ';
 
