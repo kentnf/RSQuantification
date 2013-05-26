@@ -114,3 +114,7 @@ Time-series statistics analysis using DESeq and LIMMA
 
     $get_exp_raw.pl -i list_unmap -s PE -a grated_gene_position -r 
 
+4.5 Filter the raw count (generated at step 4.4) without read support
+    
+    $filter_raw_count_graft.pl raw_count > output
+
