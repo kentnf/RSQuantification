@@ -3,7 +3,7 @@
 =head
 
  Author: Yi Zheng
- update: 06/29/2012
+ update: 07/2/2013
 
 =cut
 
@@ -18,6 +18,7 @@ Perl rRNA_rm.pl -i list_fasta
   -s SequencingMethod (default = SS) 
   -r rRNA_database_index (default = /home/database/rRNA_silva111)
   -p number of CPU (default = 24)
+  -v mismatch (default = 3) 
   -h help info
 
   SequencingMethod
@@ -31,14 +32,15 @@ Perl rRNA_rm.pl -i list_fasta
 ';
 
 my $help;
-my ($read_list, $sequencing_method, $rRNA_index, $cpu);
+my ($read_list, $sequencing_method, $rRNA_index, $cpu, $mismatch);
 
 GetOptions(
         "h|?|help"              => \$help,
         "i|list=s"              => \$read_list,
         "s|sequencing-method=s" => \$sequencing_method,
-	"r|rRNA-index"		=> \$rRNA_index,
-	"p|CPU"			=> \$cpu,
+	"r|rRNA-index=s"	=> \$rRNA_index,
+	"p|CPU=i"		=> \$cpu,
+	"v|mismatch=i"		=> \$mismatch
 );
 
 die $usage if $help;
@@ -46,6 +48,7 @@ die $usage unless $read_list;
 $rRNA_index ||= "/home/database/rRNA_silva111";
 $sequencing_method ||= "SS";
 $cpu ||= 24;
+$mismatch ||= 3;
 
 # check sequencing method
 if ($sequencing_method ne "SE" && $sequencing_method ne "SS" && $sequencing_method ne "PE" && $sequencing_method ne "PS" ) {
@@ -81,16 +84,34 @@ while(<$fh>)
 	if ($sequencing_method eq "SS" || $sequencing_method eq "SE")
 	{
 		my $read_file = $list_read{$list};
-		unless ($read_file =~ m/\.fasta/) { die "Error at input fasta for clean: $read_file\n"; }
-		my $out = $list.".fa";
-		$cmd = "bowtie -v 3 -k 1 -p $cpu --un $out -f $rRNA_index $read_file MMMM";
+		if ($read_file =~ m/\.fasta/ )
+		{
+			my $out = $list.".fa";
+			$cmd = "bowtie -v $mismatch -k 1 -p $cpu --un $out -f $rRNA_index $read_file MMMM";
+		}
+		elsif( $read_file =~ m/\.fastq/)
+		{
+			my $out = $list.".fq";
+			$cmd = "bowtie -v $mismatch -k 1 -p $cpu --un $out $rRNA_index $read_file MMMM";
+		}
+		else { die "Error at input fasta for clean: $read_file\n"; }
 	}
 	else
 	{
 		my @read = split(/\t/, $list_read{$list});
-		unless ($read[0] =~ m/\.fasta/) { die "Error at input fasta for clean: $read[0]\n"; }
-		unless ($read[1] =~ m/\.fasta/) { die "Error at input fasta for clean: $read[1]\n"; }
-		$cmd = "bowtie -v 3 -k 1 -p $cpu --un $list -f $rRNA_index -1 $read[0] -2 $read[1] MMMM 2>&1";
+
+		if ($read[0] =~ m/\.fasta/ && $read[1] =~ m/\.fasta/ )
+		{
+			$cmd = "bowtie -v $mismatch -k 1 -p $cpu --un $list -f $rRNA_index -1 $read[0] -2 $read[1] MMMM 2>&1";
+		}
+		elsif ($read[0] =~ m/\.fastq/ && $read[1] =~ m/\.fastq/)
+		{
+			$cmd = "bowtie -v $mismatch -k 1 -p $cpu --un $list $rRNA_index -1 $read[0] -2 $read[1] MMMM 2>&1";
+		}
+		else
+		{
+			die "Error at input fasta for clean: $read[0]\n";
+		}
 	}
 
 	print $cmd."\n";
@@ -110,7 +131,7 @@ sub check_list_file
 {
         my ($list_file, $sequencing_method) = @_;
         my %list_info;
-	my @file_surfix = (".fasta");
+	my @file_surfix = (".fasta", ".fastq");
         #my @file_surfix = (".gz", ".fa", ".fa.gz", ".fasta", ".fasta.gz", ".fq", ".fq.gz", ".fastq", ".fastq.gz");
 
         my ($reads, $bams);

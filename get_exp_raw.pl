@@ -400,10 +400,10 @@ sub count_mapped_gene_single
 				my $gene = join("#", @genes);
 				print $out ">".$a[0]."-$gene\t$a[1]:$a[2]-$a[3]\n".$read_seq{$a[0]}."\n";
 			}
-		}
-		else
-		{
-			print $out ">".$a[0]."-Intergenic\t$a[1]:$a[2]-$a[3]\n".$read_seq{$a[0]}."\n";
+			else
+			{
+				print $out ">".$a[0]."-Intergenic\t$a[1]:$a[2]-$a[3]\n".$read_seq{$a[0]}."\n";
+			}
 		}
         }
 

@@ -35,19 +35,99 @@ Perform the below analysis step by step:
 
     $tophat_pipeline_v2.pl -i list -d /path/plant_genome -s SS -l fr-firststrand -p 8 -m 1 -n 1
 
+    Here is the usage of tophat_pipeline.pl
+     -i  [String]   Name of the input list of read files (required)
+     -s  [String]   Sequencing method for read files: (required)
+            PE (paired-end);
+            SE (single-end);
+            PS (paired strand-specific);
+            SS (single strand-specific);
+     -d  [String]   Indexed database of genome sequences (required)
+     -l  [String]   Library type, fr-unstrand, fr-firststrand, fr-secondstrand (required)
+     -p  [Integer]  number of CPUs used for megablast clustering (default = 1)
+     -r  [Integer]  mate-inner-dist (default = 100)
+     -v  [Integer]  mate-std-dev (default = 20)
+     -m  [Integer]  segment mismatches (default = 0)
+     -n  [Integer]  initial read mismatches (default = 0)
+     -e  [Integer]  setment length (default : half of read length; 17~25)
+     -c  [Integer]  cycle (default = 0, range: 0,1,2)
+     -a     (str)  gene and position file (optional)
+     -x     (str)  gene and length file (optional)
+
+    The required input includes list of read files, sequencing method, indexed genome
+    sequences, and library type. The list is the prefix of read file. For example, if
+    the read file name is WT_17D_rep2.fasta.gz, the list should be WT_17D_rep2. For
+    paired-end read, the file name should be end with _1 or _2 before format info. For
+    example, if the read file is test1_1.fq.gz and test1_2.fq.gz, the list is test1.
+    Now, it supports gzip file with fasta or fastq format:
+    ".gz", ".fa", ".fa.gz", ".fasta", ".fasta.gz", ".fq", ".fq.gz", ".fastq", ".fastq.gz"
+
+    The file name dose not affect the real format of read file, it a fastq file named
+    as *.fasta, tophat_pipline.pl will identify the format automatically.
+
+    The segment mismatches should be not shorter than initial read mismatches. If not,
+    the tophat_pipline.pl will fix it.
+
+    Please do not provide setment length, tophat_pipline.pl will set it automatically.
+
+    If gene position and gene length files are provided, tophat_pipline.pl will generate
+    raw count and RPKM info. Otherwise, we can generate these info follow the steps
+    from 2 to 4.
+
 2) get No. of uniq mapped reads (make sure the cleaned reads locate at the same folder of bam files)
 
     $get_uniq_mapped_read.pl -i list -s SS
+
+    Here is the usage of get_uniq_mapped_num.pl.
+	-i|list                 (str)  input read list file (required)
+	-o|output               (str)  out file name   (default = uniq_mapped_num)
+  	-s|sequencing-method    (str)  (required) (default = SS)
+        	PE (paired-end);
+        	SE (single-end);
+        	PS (paired strand-specific);
+        	SS (single strand-specific);
+
+    The input list file is the same file of step 1.
+    The sequencing-method must be same as step 1.
 
 3) count the raw number for each gene
 
     $get_exp_raw.pl -i list -s SS -a gene_position_file
 
+    Here is the usage of get_exp_raw.pl.
+  	-i|list                (str)   input read list file (required)
+  	-a|gene-position       (str)   gene position file (required)
+  	-o|output              (str)   prefix of out files (default = exp; exp_sense_raw, exp_antisense_raw)
+  	-s|sequencing-method   (str)   (required) (default = SS)
+        	PE (paired-end);
+        	SE (single-end);
+        	PS (paired strand-specific);
+        	SS (single strand-specific);
+  	-h|?|help                help info
+
+    The input list file is the same file of step 1.
+    The sequencing-method must be same as step 1.
+
+    The gene position file is a tab-delimited file, format is like below:
+    chr  start  end  gene  strand  (the titile is not included)
+    chr1 100    1000 Gene1 +
+
 4) normalization using RPKM
 
     $get_exp_rpkm.pl -e exp_sense_raw -u uniq_mapped_read_num -x tomato_gene_length
 
-Get correlation for each samples
+    Here is the usage of get_exp_rpkm.pl.
+  	-x|gene-length (str)   gene length
+  	-e|exp-adjust  (str)   adjusted expression
+  	-o|output      (str)   output (default = exp_rpkm)
+
+    File uniq_mapped_num is the output of get_uniq_mapped_read.
+
+    Gene length file is a tab-delimited file, format is like below:
+    GeneID  Length (the titile is not included)
+    Gene001 1000
+
+5) Get correlation for each samples
 
     $corre.pl exp_rpkm > correlation.txt
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-use strict;
-use warnings;
+#use strict;
+#use warnings;
 use IO::File;
 
 # input is the raw count, rpkm file, pairwise comparison list, and the sample name must be sample_replicateN;
