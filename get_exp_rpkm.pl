@@ -130,8 +130,8 @@ while(<$efh>)
 
 	for(my $j=1; $j<@a; $j++)
 	{
-		#$lib_size = $lib_size[$j];
 		$lib_size = $lib_size{$title[$j]};
+		die "Error at libsize : $lib_size for title: $title[$j]\n" unless $lib_size > 0;
 		$rpkm = ($a[$j] * 1000 * 1000000) / ($length * $lib_size);
 		$rpkm = sprintf("%.2f", $rpkm);
 		$this.= "\t".$rpkm;
