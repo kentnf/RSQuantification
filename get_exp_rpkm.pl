@@ -12,6 +12,9 @@
 
 =head1 Update
 
+ 2013-12-18
+ 1. add option for libraries (cleaned reads, mapped reads)
+
  2012-03-05
  1. add help info and Getopt::Long
 
@@ -24,6 +27,7 @@
  -e|exp-raw	(str)	raw count
  -u|uniq-read	(str)	uniq mapped reads num
  -o|output	(str)	output (default = exp_rpkm)
+ -b|library	(str)	for library selection : map/clean (default = map) 
 
 =head1 Example
   
@@ -53,11 +57,14 @@ use Getopt::Long;
 my $help;
 my ($gene_length, $exp_raw, $uniq_read, $output);
 
+my $library_type = 'map';
+
 GetOptions(
 	"h|?|help"		=> \$help,
 	"x|gene-length=s"	=> \$gene_length,
 	"u|uniq-read=s"		=> \$uniq_read,
 	"e|exp-raw=s"		=> \$exp_raw,
+	"b|library=s"		=> \$library_type,
 	"o|output=s"		=> \$output
 );
 
@@ -65,6 +72,7 @@ die `pod2text $0` if $help;
 die `pod2text $0` unless $gene_length;
 die `pod2text $0` unless $exp_raw;
 die `pod2text $0` unless $uniq_read;
+if ($library_type eq "map" || $library_type eq "clean") { } else { die die `pod2text $0`; }
 
 $output ||= "exp_rpkm";
 #================================================================
@@ -92,7 +100,8 @@ while(<$ls>)
 	unless($_ =~ m/^#/)
 	{
 		my @a = split(/\t/, $_);
-		$lib_size{$a[0]} = $a[2];
+		if ($library_type eq 'map') { $lib_size{$a[0]} = $a[2]; }
+		else { $lib_size{$a[0]} = $a[1]; }
 	}
 }
 $ls->close;
@@ -125,7 +134,7 @@ while(<$efh>)
 	}
 	else
 	{
-		die "Error, no gene length for $a[0]\n";
+		die "Error, no gene length for geneID: $a[0]\n$_\n";
 	}
 
 	for(my $j=1; $j<@a; $j++)

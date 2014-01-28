@@ -130,7 +130,7 @@ if ($sequencing_method ne "SE" && $sequencing_method ne "SS" && $sequencing_meth
 	die "Error at sequencing-method: $sequencing_method\t".$usage."\n";
 }
 if ($cpu < 1) { $cpu = 1;  print STDERR "Change the number of used CPU to 1 (mininum)\n"; }
-if ($cpu > 20) {$cpu = 20; print STDERR "Change the number of used CPU to 20 (maxinum)\n"; }
+if ($cpu > 40) {$cpu = 40; print STDERR "Change the number of used CPU to 40 (maxinum)\n"; }
 if ($seg_mismatch < $read_mismatch) { $seg_mismatch = $read_mismatch; print STDERR "Change segment mismatch to $read_mismatch base on read mismatch\n"; }
 if ($seg_mismatch < 0) { $seg_mismatch = 0;  print STDERR "Change segment mismatch to 0 (mininum)\n"; }
 if ($seg_mismatch > 5) { $seg_mismatch = 5;  print STDERR "Change segment mismatch to 5 (maxinum)\n"; }
